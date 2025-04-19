@@ -102,7 +102,7 @@ const ProduitModalAddEdit = (props) => {
         // For newly uploaded images - construct URL from API response
         if (file.status === "uploading") {
           const filename = file.name.replace(",", "");
-          return `http://localhost:3003/upload/${filename}`;
+          return `https://www.rafrafi.shop:8443/upload/${filename}`;
         }
         return null;
       })
@@ -250,7 +250,7 @@ const ProduitModalAddEdit = (props) => {
             })) || []
           }
           onChange={(info) => handleImageUpload(index, info)}
-          action="http://localhost:3003/upload"
+          action="https://www.rafrafi.shop:8443/upload"
           accept="image/*"
           beforeUpload={(file) => {
             const isImage = file.type.startsWith("image/");
@@ -269,7 +269,7 @@ const ProduitModalAddEdit = (props) => {
           onPreview={(file) => {
             window.open(
               file.url ||
-                `http://localhost:3003/upload/${file.response?.filename}`,
+                `https://www.rafrafi.shop:8443/upload/${file.response?.filename}`,
               "_blank"
             );
           }}
