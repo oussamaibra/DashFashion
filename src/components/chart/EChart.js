@@ -47,7 +47,7 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
       tooltip: {
         y: {
           formatter: function (val) {
-            return val.toFixed(2);
+            return val.toFixed(2) + " TND";
           },
         },
       },
@@ -59,20 +59,23 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
 
     const processData = () => {
       try {
-        // Filtrer par année si spécifiée
+        // Filter by year if specified
         const filteredInvoices = yearFilter
-          ? invoices.filter((inv) => moment(inv.date).year() === yearFilter)
+          ? invoices.filter((inv) => 
+              moment(inv.date, 'MMMM Do YYYY, h:mm:ss a').year() === yearFilter
+            )
           : invoices;
 
         if (viewMode === "monthly") {
-          // Vue monthlyle
+          // Monthly view
           const months = [
             "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
             "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
           ];
+          
           const monthlyData = months.map((month, index) => {
             const monthInvoices = filteredInvoices.filter(
-              (inv) => moment(inv.date).month() === index
+              (inv) => moment(inv.date, 'MMMM Do YYYY, h:mm:ss a').month() === index
             );
 
             const total = monthInvoices.reduce(
@@ -82,7 +85,7 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
             const count = monthInvoices.length;
 
             return {
-              month: month.substring(0, 3), // Nom court du mois
+              month: month.substring(0, 3), // Short month name
               total: parseFloat(total.toFixed(2)),
               count,
             };
@@ -102,14 +105,16 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
             ],
           };
         } else if (viewMode === "yearly") {
-          // Comparaison yearlyle
+          // Yearly comparison
           const years = [
-            ...new Set(invoices.map((inv) => moment(inv.date).year())),
+            ...new Set(invoices.map((inv) => 
+              moment(inv.date, 'MMMM Do YYYY, h:mm:ss a').year()
+            )),
           ].sort();
 
           const yearlyData = years.map((year) => {
             const yearInvoices = invoices.filter(
-              (inv) => moment(inv.date).year() === year
+              (inv) => moment(inv.date, 'MMMM Do YYYY, h:mm:ss a').year() === year
             );
 
             const total = yearInvoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -123,7 +128,7 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
           });
 
           return {
-            categories: yearlyData?.map((d) => d.year),
+            categories: yearlyData.map((d) => d.year),
             series: [
               {
                 name: "Montant Total",
@@ -137,7 +142,7 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
           };
         }
       } catch (error) {
-        console.error("Erreur de traitement des données:", error);
+        console.error("Error processing data:", error);
         return { categories: [], series: [] };
       }
     };
@@ -149,23 +154,24 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
       series: series ?? [],
       options: {
         ...prev.options,
-        chart: {
-          ...prev.options.chart,
-          type: viewMode === "yearly" ? "bar" : "bar",
-        },
         xaxis: {
           ...prev.options.xaxis,
           categories: categories ?? [],
+          labels: {
+            style: {
+              fontSize: viewMode === "yearly" ? '12px' : '10px',
+            }
+          }
         },
         title: {
           ...prev.options.title,
           text:
             viewMode === "yearly"
-              ? `Comparaison yearlyle des Factures ${
-                  yearFilter ? `(Filtré: ${yearFilter})` : ""
+              ? `Comparaison annuelle des Factures${
+                  yearFilter ? ` (Filtré: ${yearFilter})` : ""
                 }`
-              : `Analyse monthlyle des Factures ${
-                  yearFilter ? `(Année: ${yearFilter})` : ""
+              : `Analyse mensuelle des Factures${
+                  yearFilter ? ` (Année: ${yearFilter})` : ""
                 }`,
         },
       },
@@ -177,7 +183,7 @@ function EChart({ invoices, viewMode = "monthly", yearFilter = null }) {
       <ReactApexChart
         options={chartOptions.options}
         series={chartOptions.series}
-        type={chartOptions.options.chart.type}
+        type="bar"
         height={400}
       />
     </div>

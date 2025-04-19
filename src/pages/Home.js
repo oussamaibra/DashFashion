@@ -69,14 +69,19 @@ function Home() {
 
   const paidStats = calculateStats("paid");
   const unpaidStats = calculateStats("unpaid");
+  const pendingStats = calculateStats("pending");
   const partialStats = calculateStats("partially_paid");
 
   const todayInvoices = invoices.filter((inv) =>
-    moment(inv.date).isSame(moment(), "day")
+    moment(inv.date, "MMMM Do YYYY, h:mm:ss a").isSame(moment(), "day")
   );
 
   const recentInvoices = [...invoices]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort(
+      (a, b) =>
+        moment(b.date, "MMMM Do YYYY, h:mm:ss a") -
+        moment(a.date, "MMMM Do YYYY, h:mm:ss a")
+    )
     .slice(0, 5);
 
   const stats = [
@@ -102,18 +107,18 @@ function Home() {
       color: "#52c41a",
     },
     {
+      title: "Factures En Attente",
+      value: pendingStats.count,
+      subValue: `${pendingStats.total.toFixed(2)} TND`,
+      icon: <ClockCircleOutlined style={{ fontSize: 24 }} />,
+      color: "#1890ff",
+    },
+    {
       title: "Factures Impayées",
       value: unpaidStats.count,
       subValue: `${unpaidStats.total.toFixed(2)} TND`,
-      icon: <ClockCircleOutlined style={{ fontSize: 24 }} />,
+      icon: <CloseCircleOutlined style={{ fontSize: 24 }} />,
       color: "#faad14",
-    },
-    {
-      title: "Factures Partiellement Payées",
-      value: partialStats.count,
-      subValue: `${partialStats.total.toFixed(2)} TND`,
-      icon: <ShoppingOutlined style={{ fontSize: 24 }} />,
-      color: "#fa8c16",
     },
     {
       title: "Aujourd'hui",
@@ -130,6 +135,7 @@ function Home() {
     const statusMap = {
       paid: { color: "green", text: "Payée" },
       unpaid: { color: "red", text: "Impayée" },
+      pending: { color: "blue", text: "En attente" },
       partially_paid: { color: "orange", text: "Partiellement Payée" },
     };
     return <Tag color={statusMap[status].color}>{statusMap[status].text}</Tag>;
@@ -137,20 +143,20 @@ function Home() {
 
   // Year selection dropdown for the chart
   const availableYears = [
-    ...new Set(invoices.map((inv) => moment(inv.date).year())),
+    ...new Set(
+      invoices.map((inv) => moment(inv.date, "MMMM Do YYYY, h:mm:ss a").year())
+    ),
   ].sort((a, b) => b - a);
 
   const invoicesWithMargin = invoices.map((invoice) => {
-    // Map through each item in the invoice to add the margin
     const itemsWithMargin = invoice.items.map((item) => {
       const marge = (item.prixVente - item.prixAchat) * item.quantity;
       return {
         ...item,
-        Marge: parseFloat(marge.toFixed(2)), // Round to 2 decimal places
+        Marge: parseFloat(marge.toFixed(2)),
       };
     });
 
-    // Calculate total margin for the invoice
     const totalMarge = itemsWithMargin.reduce(
       (sum, item) => sum + item.Marge,
       0
@@ -165,12 +171,16 @@ function Home() {
 
   const getYearlyData = () => {
     const years = [
-      ...new Set(invoices.map((inv) => moment(inv.date).year())),
+      ...new Set(
+        invoices.map((inv) =>
+          moment(inv.date, "MMMM Do YYYY, h:mm:ss a").year()
+        )
+      ),
     ].sort();
 
     return years.map((year) => {
       const yearInvoices = invoices.filter(
-        (inv) => moment(inv.date).year() === year
+        (inv) => moment(inv.date, "MMMM Do YYYY, h:mm:ss a").year() === year
       );
       const total = yearInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
@@ -184,12 +194,16 @@ function Home() {
 
   const getYearlyDataMarge = () => {
     const years = [
-      ...new Set(invoicesWithMargin.map((inv) => moment(inv.date).year())),
+      ...new Set(
+        invoicesWithMargin.map((inv) =>
+          moment(inv.date, "MMMM Do YYYY, h:mm:ss a").year()
+        )
+      ),
     ].sort();
 
     return years.map((year) => {
       const yearInvoices = invoicesWithMargin.filter(
-        (inv) => moment(inv.date).year() === year
+        (inv) => moment(inv.date, "MMMM Do YYYY, h:mm:ss a").year() === year
       );
       const total = yearInvoices.reduce((sum, inv) => sum + inv.totalMarge, 0);
 
@@ -214,10 +228,6 @@ function Home() {
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
                 transition: "all 0.3s ease",
                 height: "100%",
-                ":hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 6px 16px rgba(0, 0, 0, 0.1)",
-                },
               }}
               bodyStyle={{
                 padding: "20px 24px",
@@ -246,10 +256,7 @@ function Home() {
                   }}
                 >
                   {React.cloneElement(stat.icon, {
-                    style: {
-                      fontSize: 20,
-                      color: stat.color,
-                    },
+                    style: { fontSize: 20, color: stat.color },
                   })}
                 </div>
                 <div>
@@ -264,11 +271,7 @@ function Home() {
                   </Text>
                   <Title
                     level={3}
-                    style={{
-                      margin: 0,
-                      color: stat.color,
-                      fontWeight: 600,
-                    }}
+                    style={{ margin: 0, color: stat.color, fontWeight: 600 }}
                   >
                     {stat.value}
                   </Title>
@@ -336,7 +339,7 @@ function Home() {
             chartType="line"
             xAxis="year"
             yAxis="total"
-            title="Total des Factures par Année"
+            title="Total des Marges par Année"
           />
         ) : (
           <EChartMarge
@@ -408,7 +411,7 @@ function Home() {
         bodyStyle={{ padding: "24px" }}
       >
         <Row gutter={[24, 24]} align="middle">
-          <Col xs={24} sm={24} md={8}>
+          <Col xs={24} sm={24} md={6}>
             <div style={{ textAlign: "center" }}>
               <Progress
                 type="dashboard"
@@ -436,7 +439,37 @@ function Home() {
             </div>
           </Col>
 
-          <Col xs={24} sm={24} md={8}>
+          <Col xs={24} sm={24} md={6}>
+            <div style={{ textAlign: "center" }}>
+              <Progress
+                type="dashboard"
+                percent={
+                  Math.round((pendingStats.count / invoices.length) * 100) || 0
+                }
+                strokeColor="#1890ff"
+                strokeWidth={10}
+                format={(percent) => (
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontSize: "24px", fontWeight: "600" }}>
+                      {percent}%
+                    </span>
+                    <span style={{ fontSize: "14px", color: "#1890ff" }}>
+                      En Attente
+                    </span>
+                  </div>
+                )}
+              />
+              <div style={{ marginTop: "16px" }}>
+                <Text strong>{pendingStats.count} factures</Text>
+                <br />
+                <Text type="secondary">
+                  {pendingStats.total.toFixed(2)} TND
+                </Text>
+              </div>
+            </div>
+          </Col>
+
+          <Col xs={24} sm={24} md={6}>
             <div style={{ textAlign: "center" }}>
               <Progress
                 type="dashboard"
@@ -464,7 +497,7 @@ function Home() {
             </div>
           </Col>
 
-          <Col xs={24} sm={24} md={8}>
+          <Col xs={24} sm={24} md={6}>
             <div style={{ textAlign: "center" }}>
               <Progress
                 type="dashboard"
