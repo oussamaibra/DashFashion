@@ -67,8 +67,8 @@ function Home() {
     return { count, total };
   };
 
-  const paidStats = calculateStats("paid");
-  const unpaidStats = calculateStats("unpaid");
+  const paidStats = calculateStats("valid");
+  const unpaidStats = calculateStats("rejected");
   const pendingStats = calculateStats("pending");
   const partialStats = calculateStats("partially_paid");
 
@@ -100,7 +100,7 @@ function Home() {
       color: "#52c41a",
     },
     {
-      title: "Factures Payées",
+      title: "Factures Valid",
       value: paidStats.count,
       subValue: `${paidStats.total.toFixed(2)} TND`,
       icon: <CheckCircleOutlined style={{ fontSize: 24 }} />,
@@ -114,7 +114,7 @@ function Home() {
       color: "#1890ff",
     },
     {
-      title: "Factures Impayées",
+      title: "Factures Rejecter",
       value: unpaidStats.count,
       subValue: `${unpaidStats.total.toFixed(2)} TND`,
       icon: <CloseCircleOutlined style={{ fontSize: 24 }} />,
