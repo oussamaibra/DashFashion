@@ -27,7 +27,7 @@ const InvoiceModalAddEdit = ({
   type,
   customers,
   products,
-  stores, // Added stores prop
+  stores,
   onCancel,
 }) => {
   const [form] = Form.useForm();
@@ -74,10 +74,11 @@ const InvoiceModalAddEdit = ({
       ...items,
       {
         stockId: null,
-        magasinId: null, // Added magasinId
+        color: "",
+        size: "",
+        image: "",
         reference: "",
         nom: "",
-        taille: 0,
         quantity: 1,
         prixAchat: 0,
         prixVente: 0,
@@ -102,7 +103,9 @@ const InvoiceModalAddEdit = ({
       if (product) {
         newItems[index].reference = product.reference;
         newItems[index].nom = product.nom;
-        newItems[index].taille = product.taille;
+        newItems[index].color = product.color || "";
+        newItems[index].size = product.size || "";
+        newItems[index].image = product.image || "";
         newItems[index].prixAchat = product.prixAchat;
         newItems[index].prixVente = product.prixVente;
       }
@@ -129,16 +132,27 @@ const InvoiceModalAddEdit = ({
       setLoading(true);
 
       const payload = {
-        ...values,
+        invoiceNumber: values.invoiceNumber,
         date: values.date.toISOString(),
-        items: items.map((item) => ({
-          ...item,
-          magasinId: item.magasinId || stores[0]?._id, // Ensure magasinId is set
+        customerName: values.customerName,
+        customerAddress: values.customerAddress,
+        customerPhone: values.customerPhone,
+        items: items.map(item => ({
+          stockId: item.stockId,
+          color: item.color,
+          size: item.size,
+          image: item.image,
+          reference: item.reference,
+          nom: item.nom,
+          quantity: item.quantity,
+          prixAchat: item.prixAchat,
+          prixVente: item.prixVente
         })),
         subtotal,
         tax,
         total,
-        status: "unpaid",
+        status: "pending",
+        notes: values.notes || "",
       };
 
       if (type === "EDIT") {
@@ -171,9 +185,6 @@ const InvoiceModalAddEdit = ({
           onChange={(val) => handleItemChange(index, "stockId", val)}
           showSearch
           optionFilterProp="children"
-          // filterOption={(input, option) =>
-          //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          // }
         >
           {products.map((product) => (
             <Option key={product._id} value={product._id}>
@@ -184,26 +195,25 @@ const InvoiceModalAddEdit = ({
       ),
     },
     {
-      title: "Magasin",
-      dataIndex: "magasinId",
-      key: "magasinId",
+      title: "Couleur",
+      dataIndex: "color",
+      key: "color",
       render: (value, record, index) => (
-        <Select
+        <Input
           value={value}
-          style={{ width: "100%" }}
-          onChange={(val) => handleItemChange(index, "magasinId", val)}
-          showSearch
-          optionFilterProp="children"
-          // filterOption={(input, option) =>
-          //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          // }
-        >
-          {stores.map((store) => (
-            <Option key={store._id} value={store._id}>
-              {store.nom}
-            </Option>
-          ))}
-        </Select>
+          onChange={(e) => handleItemChange(index, "color", e.target.value)}
+        />
+      ),
+    },
+    {
+      title: "Taille",
+      dataIndex: "size",
+      key: "size",
+      render: (value, record, index) => (
+        <Input
+          value={value}
+          onChange={(e) => handleItemChange(index, "size", e.target.value)}
+        />
       ),
     },
     {
@@ -288,27 +298,6 @@ const InvoiceModalAddEdit = ({
             </Form.Item>
           </Col>
         </Row>
-
-        <Form.Item
-          name="customerId"
-          label="Client"
-          rules={[{ required: true, message: "Ce champ est requis" }]}
-        >
-          <Select
-            showSearch
-            optionFilterProp="children"
-            onChange={handleCustomerChange}
-            // filterOption={(input, option) =>
-            //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            // }
-          >
-            {customers.map((customer) => (
-              <Option key={customer._id} value={customer._id}>
-                {customer.nom}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
 
         <Row gutter={16}>
           <Col span={8}>
