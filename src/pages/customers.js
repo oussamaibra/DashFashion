@@ -52,7 +52,7 @@ const Customers = () => {
 
   const fetchClients = () => {
     axios
-      .get("http://127.0.0.1:3003/clients")
+      .get("https://www.rafrafi.shop:8443/clients")
       .then((response) => {
         if (response.data) {
           setSearch("");
@@ -78,7 +78,7 @@ const Customers = () => {
       icon: <ExclamationCircleOutlined />,
       onOk() {
         axios
-          .delete(`http://127.0.0.1:3003/clients/${clientData._id}`)
+          .delete(`https://www.rafrafi.shop:8443/clients/${clientData._id}`)
           .then(() => {
             message.success("Client supprimé avec succès");
             handleRefetch();

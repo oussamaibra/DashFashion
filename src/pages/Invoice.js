@@ -70,7 +70,7 @@ const Invoice = () => {
   }, [refetech]);
 
   const fetchData = () => {
-    axios.get("http://127.0.0.1:3003/invoice").then((response) => {
+    axios.get("https://www.rafrafi.shop:8443/invoice").then((response) => {
       if (response.data) {
         setSearch("");
         let sorted_obj = _.sortBy(response.data, function (o) {
@@ -85,19 +85,19 @@ const Invoice = () => {
   };
 
   const fetchCustomers = () => {
-    axios.get("http://127.0.0.1:3003/clients").then((response) => {
+    axios.get("https://www.rafrafi.shop:8443/clients").then((response) => {
       setCustomers(response.data);
     });
   };
 
   const fetchStore = () => {
-    axios.get("http://127.0.0.1:3003/magasins").then((response) => {
+    axios.get("https://www.rafrafi.shop:8443/magasins").then((response) => {
       setStore(response.data);
     });
   };
 
   const fetchProducts = () => {
-    axios.get("http://127.0.0.1:3003/produit").then((response) => {
+    axios.get("https://www.rafrafi.shop:8443/produit").then((response) => {
       setProducts(response.data);
     });
   };
@@ -112,7 +112,7 @@ const Invoice = () => {
       icon: <ExclamationCircleOutlined />,
       onOk() {
         axios
-          .delete("http://127.0.0.1:3003/invoice/" + dataDelete)
+          .delete("https://www.rafrafi.shop:8443/invoice/" + dataDelete)
           .then((response) => {
             message.success("Facture supprimée avec succès.");
             handrefetech();

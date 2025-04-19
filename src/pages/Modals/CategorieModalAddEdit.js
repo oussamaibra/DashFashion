@@ -31,7 +31,7 @@ const AddOrUpdateModalCars = (props) => {
   const [Loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  const serverURL = "http://127.0.0.1:3003";
+  const serverURL = "https://www.rafrafi.shop:8443";
 
   const [form] = useForm();
 
@@ -65,7 +65,7 @@ const AddOrUpdateModalCars = (props) => {
           !listfilesuploaded?.find(
             (val) =>
               val ===
-              "http://127.0.0.1:3003" + "/images/" + el?.originFileObj?.name
+              "https://www.rafrafi.shop:8443" + "/images/" + el?.originFileObj?.name
           )
         ) {
           console.log("eeeeeeeeee");
@@ -75,13 +75,13 @@ const AddOrUpdateModalCars = (props) => {
           form.setFieldsValue({
             images: [
               ...form.getFieldValue("images"),
-              "http://127.0.0.1:3003" + "/images/" + el?.originFileObj.name,
+              "https://www.rafrafi.shop:8443" + "/images/" + el?.originFileObj.name,
             ],
           });
           listOfPromise.push(
             axios({
               method: "post",
-              url: "http://127.0.0.1:3003" + "/api/upload",
+              url: "https://www.rafrafi.shop:8443" + "/api/upload",
               data: bodyFormData,
               headers: { "Content-Type": "multipart/form-data" },
             })
@@ -112,7 +112,7 @@ const AddOrUpdateModalCars = (props) => {
     const img = form.getFieldValue("images");
     if (props.type === "EDIT") {
       await axios
-        .put("http://127.0.0.1:3003/categories/" + values.id, {
+        .put("https://www.rafrafi.shop:8443/categories/" + values.id, {
           name: values?.name,
           description: values?.description,
           thumbnailImage: img[0],
@@ -129,7 +129,7 @@ const AddOrUpdateModalCars = (props) => {
     } else {
       console.log("from", form.getFieldValue("data"));
       await axios
-        .post("http://127.0.0.1:3003/categories", {
+        .post("https://www.rafrafi.shop:8443/categories", {
           name: values?.name,
           description: values?.description,
           thumbnailImage: img[0],

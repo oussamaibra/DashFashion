@@ -36,10 +36,10 @@ const MagasinModalAddEdit = (props) => {
     setLoading(true);
     try {
       if (action === "EDIT") {
-        await axios.put(`http://127.0.0.1:3003/magasins/${record._id}`, values);
+        await axios.put(`https://www.rafrafi.shop:8443/magasins/${record._id}`, values);
         message.success("Magasin mis à jour avec succès");
       } else {
-        await axios.post("http://127.0.0.1:3003/magasins", values);
+        await axios.post("https://www.rafrafi.shop:8443/magasins", values);
         message.success("Magasin créé avec succès");
       }
 

@@ -156,10 +156,10 @@ const InvoiceModalAddEdit = ({
       };
 
       if (type === "EDIT") {
-        await axios.put(`http://127.0.0.1:3003/invoice/${record._id}`, payload);
+        await axios.put(`https://www.rafrafi.shop:8443/invoice/${record._id}`, payload);
         notification.success({ message: "Facture mise à jour avec succès" });
       } else {
-        await axios.post("http://127.0.0.1:3003/invoice", payload);
+        await axios.post("https://www.rafrafi.shop:8443/invoice", payload);
         notification.success({ message: "Facture créée avec succès" });
       }
 

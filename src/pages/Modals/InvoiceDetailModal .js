@@ -23,7 +23,7 @@ const InvoiceDetailModal = ({ visible, invoice, onCancel, refetch }) => {
   const handleStatusUpdate = async (newStatus) => {
     setLoading(true);
     try {
-      await axios.put(`http://127.0.0.1:3003/invoice/${invoice?._id}`, {
+      await axios.put(`https://www.rafrafi.shop:8443/invoice/${invoice?._id}`, {
         ...invoice,
         status: newStatus,
       });

@@ -127,10 +127,10 @@ const ProduitModalAddEdit = (props) => {
       };
 
       if (type === "EDIT") {
-        await axios.put(`http://127.0.0.1:3003/produit/${record._id}`, payload);
+        await axios.put(`https://www.rafrafi.shop:8443/produit/${record._id}`, payload);
         message.success("Produit mis à jour avec succès");
       } else {
-        await axios.post("http://127.0.0.1:3003/produit", payload);
+        await axios.post("https://www.rafrafi.shop:8443/produit", payload);
         message.success("Produit créé avec succès");
       }
       refetch();

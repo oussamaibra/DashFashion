@@ -54,7 +54,7 @@ const Produit = () => {
   }, [refetech]);
 
   const fetchData = () => {
-    axios.get("http://127.0.0.1:3003/produit").then((response) => {
+    axios.get("https://www.rafrafi.shop:8443/produit").then((response) => {
       if (response.data) {
         setSearch("");
         setfilterData([]);
@@ -78,7 +78,7 @@ const Produit = () => {
       icon: <ExclamationCircleOutlined />,
       onOk() {
         axios
-          .delete("http://127.0.0.1:3003/produit/" + dataDelete)
+          .delete("https://www.rafrafi.shop:8443/produit/" + dataDelete)
           .then((response) => {
             message.success("Produit supprimer avec success.");
             handrefetech();
@@ -179,7 +179,7 @@ const Produit = () => {
 
   //   try {
   //     const response = await axios.post(
-  //       "http://127.0.0.1:3003/produit/import",
+  //       "https://www.rafrafi.shop:8443/produit/import",
   //       formData,
   //       {
   //         headers: {
