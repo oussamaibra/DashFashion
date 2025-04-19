@@ -34,6 +34,7 @@ import dayjs from "dayjs";
 import InvoiceModalAddEdit from "./Modals/InvoiceModalAddEdit";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import InvoiceDetailModal from "./Modals/InvoiceDetailModal ";
 
 const { confirm } = Modal;
 const { Option } = Select;
@@ -44,6 +45,7 @@ const Invoice = () => {
   const [data, setData] = useState([]);
   const [filterData, setfilterData] = useState([]);
   const [visible, setVisible] = useState(false);
+  const [showdetail, setshowdetail] = useState(false);
   const [action, setAction] = useState("");
   const [search, setSearch] = useState("");
   const [record, setrecord] = useState(null);
@@ -95,7 +97,7 @@ const Invoice = () => {
   };
 
   const fetchProducts = () => {
-    axios.get("http://127.0.0.1:3003/stock").then((response) => {
+    axios.get("http://127.0.0.1:3003/produit").then((response) => {
       setProducts(response.data);
     });
   };
@@ -344,7 +346,7 @@ const Invoice = () => {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (date) => dayjs(date).format("DD/MM/YYYY"),
+      render: (date) => date,
       sorter: (a, b) => new Date(a.date) - new Date(b.date),
     },
     {
@@ -394,9 +396,9 @@ const Invoice = () => {
           </Button>
           <Button
             onClick={() => {
-              // setshow(true);
-              // setrecord(record);
-              generatePDF(record);
+              setshowdetail(true);
+              setrecord(_);
+              
             }}
           >
             <InfoCircleOutlined />
@@ -494,6 +496,11 @@ const Invoice = () => {
           stores={stores}
           onCancel={() => setVisible(false)}
         />
+        <InvoiceDetailModal
+        visible={showdetail}
+        invoice={record}
+        onCancel={() => setshowdetail(false)}
+         />
       </div>
     </>
   );

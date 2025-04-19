@@ -179,19 +179,25 @@ const InvoiceModalAddEdit = ({
       dataIndex: "stockId",
       key: "stockId",
       render: (value, record, index) => (
-        <Select
-          value={value}
-          style={{ width: "100%" }}
-          onChange={(val) => handleItemChange(index, "stockId", val)}
-          showSearch
-          optionFilterProp="children"
-        >
-          {products.map((product) => (
-            <Option key={product._id} value={product._id}>
-              {product.nom} ({product.reference})
-            </Option>
-          ))}
-        </Select>
+        <img
+        src={record?.image}
+        height={"50px"}
+        width={"50px"}
+        
+        />
+        // <Select
+        //   value={value}
+        //   style={{ width: "100%" }}
+        //   onChange={(val) => handleItemChange(index, "stockId", val)}
+        //   showSearch
+        //   optionFilterProp="children"
+        // >
+        //   {products.map((product) => (
+        //     <Option key={product._id} value={product._id}>
+        //       {product.nom} ({product.reference})
+        //     </Option>
+        //   ))}
+        // </Select>
       ),
     },
     {
@@ -199,10 +205,16 @@ const InvoiceModalAddEdit = ({
       dataIndex: "color",
       key: "color",
       render: (value, record, index) => (
-        <Input
-          value={value}
-          onChange={(e) => handleItemChange(index, "color", e.target.value)}
-        />
+        <span 
+        style={{
+          display: 'inline-block',
+          width: 14,
+          height: 14,
+          backgroundColor: record.color,
+          marginRight: 8,
+          border: '1px solid #d9d9d9'
+        }}
+      />
       ),
     },
     {
@@ -356,14 +368,14 @@ const InvoiceModalAddEdit = ({
                 <span style={{ marginRight: 16 }}>Sous-total:</span>
                 <span>{subtotal.toFixed(2)} TND</span>
               </div>
-              <div>
+              {/* <div>
                 <span style={{ marginRight: 16 }}>Taxe (20%):</span>
                 <span>{tax.toFixed(2)} TND</span>
-              </div>
-              <div>
+              </div> */}
+              {/* <div>
                 <span style={{ marginRight: 16 }}>Total:</span>
                 <span>{total.toFixed(2)} TND</span>
-              </div>
+              </div> */} 
             </Space>
           </Col>
         </Row>
