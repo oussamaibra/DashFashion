@@ -143,7 +143,7 @@ const Produit = () => {
               <Button
                 type="primary"
                 danger
-                onClick={() => showPromiseConfirm(record, record.id)}
+                onClick={() => showPromiseConfirm(record, record._id)}
               >
                 <DeleteTwoTone twoToneColor="#FFFFFF" />
               </Button>
@@ -154,12 +154,13 @@ const Produit = () => {
     },
   ];
 
-  const handleSearch = () => {
-    if (!search) {
-      fetchData();
-      return;
-    }
-
+  const handleSearch = (e) => {
+    const search = e.target.value;
+    setSearch(search);
+    // if (!search) {
+    //   fetchData();
+    //   return;
+    // }
     const filtered = data.filter(
       (item) =>
         item.nom.toLowerCase().includes(search.toLowerCase()) ||
@@ -169,32 +170,32 @@ const Produit = () => {
     setfilterData(filtered);
   };
 
-  const handleExcelImport = async (options) => {
-    const { file } = options;
-    const formData = new FormData();
-    formData.append("file", file);
+  // const handleExcelImport = async (options) => {
+  //   const { file } = options;
+  //   const formData = new FormData();
+  //   formData.append("file", file);
 
-    setFileUploading(true);
+  //   setFileUploading(true);
 
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:3003/produit/import",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+  //   try {
+  //     const response = await axios.post(
+  //       "http://127.0.0.1:3003/produit/import",
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
 
-      message.success(`${file.name} importé avec succès`);
-      handrefetech();
-    } catch (error) {
-      message.error(`Échec de l'importation de ${file.name}: ${error.message}`);
-    } finally {
-      setFileUploading(false);
-    }
-  };
+  //     message.success(`${file.name} importé avec succès`);
+  //     handrefetech();
+  //   } catch (error) {
+  //     message.error(`Échec de l'importation de ${file.name}: ${error.message}`);
+  //   } finally {
+  //     setFileUploading(false);
+  //   }
+  // };
 
   const calculateStock = (option) => {
     const availableStock =
@@ -229,8 +230,8 @@ const Produit = () => {
                     placeholder="Rechercher par nom, référence ou catégorie"
                     style={{ marginRight: 25, width: 250 }}
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onPressEnter={handleSearch}
+                    onChange={(e) => handleSearch(e)}
+                    // onPressEnter={handleSearch}
                     suffix={<SearchOutlined onClick={handleSearch} />}
                   />
 
@@ -245,28 +246,13 @@ const Produit = () => {
                   >
                     Ajouter un produit
                   </Button>
-
-                  <Upload
-                    accept=".xlsx,.xls,.csv"
-                    customRequest={handleExcelImport}
-                    showUploadList={false}
-                    disabled={fileUploading}
-                  >
-                    <Button
-                      type="primary"
-                      icon={<UploadOutlined />}
-                      loading={fileUploading}
-                    >
-                      Importer depuis Excel
-                    </Button>
-                  </Upload>
                 </div>
               }
             >
               <div className="table-responsive">
                 <Table
                   columns={columns}
-                  dataSource={filterData.length > 0 ? filterData : data}
+                  dataSource={search ? filterData : data}
                   pagination={true}
                   className="ant-border-space"
                   rowKey="reference"
@@ -319,17 +305,45 @@ const Produit = () => {
                   </Col>
 
                   <Col span={12}>
-                    <h3>Variantes disponibles</h3>
+                    <h3 style={{ marginBottom: 16 }}>Variantes disponibles</h3>
                     <Select
-                      style={{ width: "100%", marginBottom: 16 }}
+                      style={{ width: "100%" }}
                       value={selectedColor}
                       onChange={(value) => setSelectedColor(value)}
                       placeholder="Sélectionner une couleur"
+                      optionLabelProp="label"
+                      showSearch
+                      filterOption={(input, option) =>
+                        option.label.toLowerCase().includes(input.toLowerCase())
+                      }
                     >
-                      {record.options?.map((option, index) => (
-                        <Option key={index} value={option.color}>
-                          {option.color} - {option.sizes}
-                        </Option>
+                      {record?.options?.map((option, index) => (
+                        <Select.Option
+                          key={index}
+                          value={option.color}
+                          style={{
+                            backgroundColor: option.color,
+                          }}
+                          label={`${option.sizes}`}
+                        >
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            {option.sizes}
+                            {option.images && (
+                              <img
+                                src={option.images.split(",")[0]}
+                                alt=""
+                                style={{
+                                  width: 20,
+                                  height: 20,
+                                  marginLeft: 8,
+                                  objectFit: "cover",
+                                }}
+                              />
+                            )}
+                          </div>
+                        </Select.Option>
                       ))}
                     </Select>
                   </Col>
