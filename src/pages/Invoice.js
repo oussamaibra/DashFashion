@@ -512,7 +512,7 @@ const Invoice = () => {
         <InvoiceDetailModal
           visible={showdetail}
           invoice={record}
-          refetch={refetech()}
+          refetch={fetchData}
           onCancel={() => setshowdetail(false)}
         />
       </div>
