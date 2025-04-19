@@ -34,7 +34,6 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { Redirect } from "react-router-dom/cjs/react-router-dom";
-import imagee from "../assets/videos/6994619-uhd_3840_2160_30fps.mp4";
 function onChange(checked) {
   console.log(`switch to ${checked}`);
 }
@@ -206,9 +205,7 @@ const SignIn = () => {
             </div> */}
         </Header>
         <div className="card-container">
-      <video className="videoTag" autoPlay loop muted>
-        <source src={imagee} type="video/mp4" />
-      </video>
+
       <Card className="transparent-card">
         <div className="signin">
           <Row gutter={[24, 0]} justify="space-around">
