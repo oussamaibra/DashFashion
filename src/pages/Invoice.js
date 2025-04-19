@@ -68,7 +68,7 @@ const Invoice = () => {
   }, [refetech]);
 
   const fetchData = () => {
-    axios.get("http://127.0.0.1:3000/invoice").then((response) => {
+    axios.get("http://127.0.0.1:3003/invoice").then((response) => {
       if (response.data) {
         setSearch("");
         let sorted_obj = _.sortBy(response.data, function (o) {
@@ -83,19 +83,19 @@ const Invoice = () => {
   };
 
   const fetchCustomers = () => {
-    axios.get("http://127.0.0.1:3000/clients").then((response) => {
+    axios.get("http://127.0.0.1:3003/clients").then((response) => {
       setCustomers(response.data);
     });
   };
 
   const fetchStore = () => {
-    axios.get("http://127.0.0.1:3000/magasins").then((response) => {
+    axios.get("http://127.0.0.1:3003/magasins").then((response) => {
       setStore(response.data);
     });
   };
 
   const fetchProducts = () => {
-    axios.get("http://127.0.0.1:3000/stock").then((response) => {
+    axios.get("http://127.0.0.1:3003/stock").then((response) => {
       setProducts(response.data);
     });
   };
@@ -110,7 +110,7 @@ const Invoice = () => {
       icon: <ExclamationCircleOutlined />,
       onOk() {
         axios
-          .delete("http://127.0.0.1:3000/invoice/" + dataDelete)
+          .delete("http://127.0.0.1:3003/invoice/" + dataDelete)
           .then((response) => {
             message.success("Facture supprimée avec succès.");
             handrefetech();
@@ -280,7 +280,7 @@ const Invoice = () => {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(9);
         doc.text("Merci pour votre confiance. Paiement attendu sous 30 jours.", pageWidth / 2, footerY + 10, { align: 'center' });
-        doc.text("IBAN: FR76 3000 1000 0100 0000 0000 XXXX • BIC: SOGEFRPP", pageWidth / 2, footerY + 16, { align: 'center' });
+        doc.text("IBAN: FR76 3003 1000 0100 0000 0000 XXXX • BIC: SOGEFRPP", pageWidth / 2, footerY + 16, { align: 'center' });
     
         doc.setFontSize(8);
         doc.text(`Page ${data.pageCount}`, pageWidth - 15, footerY + 26, { align: 'right' });

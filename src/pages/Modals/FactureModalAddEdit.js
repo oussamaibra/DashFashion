@@ -42,13 +42,13 @@ import {
     const [images, setimages] = useState([]);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState("");
-    const serverURL = "http://127.0.0.1:3000";
+    const serverURL = "http://127.0.0.1:3003";
   
     const [form] = useForm();
   
     useEffect(() => {
       axios
-        .get("http://127.0.0.1:3000/categories")
+        .get("http://127.0.0.1:3003/categories")
         .then((response) => {
           console.log("response", response);
           if (response.data.data) {
@@ -59,7 +59,7 @@ import {
         });
   
       axios
-        .get("http://127.0.0.1:3000/collection")
+        .get("http://127.0.0.1:3003/collection")
         .then((response) => {
           console.log("response", response);
           if (response.data.data) {
@@ -131,7 +131,7 @@ import {
             const Listimages = oldimges[key];
   
             Listimages.push(
-              "http://127.0.0.1:3000" + "/images/" + el?.name
+              "http://127.0.0.1:3003" + "/images/" + el?.name
             );
             setimages(oldimges);
   
@@ -142,7 +142,7 @@ import {
             listOfPromise.push(
               axios({
                 method: "post",
-                url: "http://127.0.0.1:3000" + col,
+                url: "http://127.0.0.1:3003" + col,
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data" },
               })
@@ -180,7 +180,7 @@ import {
       }));
       if (props.type === "EDIT") {
         await axios
-          .put("http://127.0.0.1:3000/products/" + values.id, {
+          .put("http://127.0.0.1:3003/products/" + values.id, {
             name: values.name,
             description: values.description,
             detail: values.detail,
@@ -199,7 +199,7 @@ import {
           });
       } else {
         await axios
-          .post("http://127.0.0.1:3000/products", {
+          .post("http://127.0.0.1:3003/products", {
             name: values.name,
             description: values.description,
             detail: values.detail,

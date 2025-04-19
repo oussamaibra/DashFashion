@@ -58,10 +58,10 @@ const CheckModalAddEdit = (props) => {
       };
 
       if (action === "EDIT") {
-        await axios.put(`http://127.0.0.1:3000/checks/${record._id}`, payload);
+        await axios.put(`http://127.0.0.1:3003/checks/${record._id}`, payload);
         message.success("Chèque mis à jour avec succès");
       } else {
-        await axios.post("http://127.0.0.1:3000/checks", payload);
+        await axios.post("http://127.0.0.1:3003/checks", payload);
         message.success("Chèque créé avec succès");
       }
 

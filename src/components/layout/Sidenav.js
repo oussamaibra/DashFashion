@@ -222,7 +222,7 @@ function Sidenav({ color }) {
         )}
 
         {/* Clients - Admin only */}
-        {isAdmin && (
+        {/* {isAdmin && (
           <Menu.Item key="20">
             <NavLink to="/customers">
               <span
@@ -236,10 +236,10 @@ function Sidenav({ color }) {
               <span className="label">Client</span>
             </NavLink>
           </Menu.Item>
-        )}
+        )} */}
 
         {/* Check - Admin only */}
-        {isAdmin && (
+        {/* {isAdmin && (
           <Menu.Item key="22">
             <NavLink to="/Check">
               <span
@@ -253,10 +253,10 @@ function Sidenav({ color }) {
               <span className="label">Check</span>
             </NavLink>
           </Menu.Item>
-        )}
+        )} */}
 
         {/* Magasin - Admin only */}
-        {isAdmin && (
+        {/* {isAdmin && (
           <Menu.Item key="99">
             <NavLink to="/magasin">
               <span
@@ -270,7 +270,7 @@ function Sidenav({ color }) {
               <span className="label">Magasin</span>
             </NavLink>
           </Menu.Item>
-        )}
+        )} */}
 
         {/* Admins - Admin only */}
         {isAdmin && (

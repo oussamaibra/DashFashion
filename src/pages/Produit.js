@@ -14,6 +14,7 @@ import {
   Tag,
   Divider,
   Progress,
+  Select,
 } from "antd";
 import {
   DeleteTwoTone,
@@ -30,11 +31,11 @@ import ProduitModalAddEdit from "./Modals/ProduitModalAddEdit";
 import Text from "antd/lib/typography/Text";
 
 const { confirm } = Modal;
+const { Option } = Select;
 
 const Produit = () => {
   const [data, setData] = useState([]);
   const [filterData, setfilterData] = useState([]);
-  const [magasins, setMagasins] = useState([]);
   const [visible, setVisible] = useState(false);
   const [action, setAction] = useState("");
   const [search, setSearch] = useState("");
@@ -42,6 +43,7 @@ const Produit = () => {
   const [refetech, setrefetech] = useState(false);
   const [show, setshow] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(null);
 
   const abilities = JSON.parse(localStorage.getItem("user"))?.abilities?.find(
     (el) => el.page === "produit"
@@ -52,23 +54,18 @@ const Produit = () => {
   }, [refetech]);
 
   const fetchData = () => {
-    axios.get("http://127.0.0.1:3000/stock").then((response) => {
+    axios.get("http://127.0.0.1:3003/produit").then((response) => {
       if (response.data) {
         setSearch("");
         setfilterData([]);
         let sorted_obj = _.sortBy(response.data, function (o) {
-          return Number(o._id);
+          return Number(o.reference);
         });
         setData(sorted_obj);
       } else {
         notification.error({ message: "No Data Found" });
       }
     });
-
-    axios
-      .get("http://127.0.0.1:3000/magasins")
-      .then((response) => setMagasins(response.data))
-      .catch((err) => console.error("Error loading stores:", err));
   };
 
   const handrefetech = () => {
@@ -77,11 +74,11 @@ const Produit = () => {
 
   const showPromiseConfirm = (alldata, dataDelete) => {
     confirm({
-      title: "Vous voulez supprimer " + alldata.name + "?",
+      title: "Vous voulez supprimer " + alldata.nom + "?",
       icon: <ExclamationCircleOutlined />,
       onOk() {
         axios
-          .delete("http://127.0.0.1:3000/stock/" + dataDelete)
+          .delete("http://127.0.0.1:3003/produit/" + dataDelete)
           .then((response) => {
             message.success("Produit supprimer avec success.");
             handrefetech();
@@ -103,12 +100,24 @@ const Produit = () => {
       key: "nom",
     },
     {
+      title: "Catégorie",
+      dataIndex: "category",
+      key: "category",
+    },
+    {
+      title: "Options",
+      key: "options",
+      render: (_, record) => (
+        <Tag color="blue">{record.options?.length || 0} variants</Tag>
+      ),
+    },
+    {
       title: "Actions",
       key: "action",
       render: (_, record) => (
         <div className="action-buttons">
-          <Row>
-            <Col span={8} className="ms-2">
+          <Row gutter={8}>
+            <Col>
               <Button
                 onClick={() => {
                   setVisible(true);
@@ -119,17 +128,18 @@ const Produit = () => {
                 <EditTwoTone />
               </Button>
             </Col>
-            <Col span={8} className="ms-2">
+            <Col>
               <Button
                 onClick={() => {
                   setshow(true);
                   setrecord(record);
+                  setSelectedColor(record.options?.[0]?.color || null);
                 }}
               >
                 <InfoCircleOutlined />
               </Button>
             </Col>
-            <Col span={8}>
+            <Col>
               <Button
                 type="primary"
                 danger
@@ -153,7 +163,8 @@ const Produit = () => {
     const filtered = data.filter(
       (item) =>
         item.nom.toLowerCase().includes(search.toLowerCase()) ||
-        item.reference.toLowerCase().includes(search.toLowerCase())
+        item.reference.toLowerCase().includes(search.toLowerCase()) ||
+        item.category.toLowerCase().includes(search.toLowerCase())
     );
     setfilterData(filtered);
   };
@@ -167,7 +178,7 @@ const Produit = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:3000/stock/import",
+        "http://127.0.0.1:3003/produit/import",
         formData,
         {
           headers: {
@@ -185,6 +196,23 @@ const Produit = () => {
     }
   };
 
+  const calculateStock = (option) => {
+    const availableStock =
+      option.quantiteInitiale - option.quantiteVendue - option.quantitePerdue;
+    const stockPercentage = (availableStock / option.quantiteInitiale) * 100;
+
+    return {
+      availableStock,
+      stockPercentage,
+      status:
+        availableStock <= 0
+          ? "RUPTURE DE STOCK"
+          : availableStock <= 5
+          ? "STOCK FAIBLE"
+          : "EN STOCK",
+    };
+  };
+
   return (
     <>
       <h1>Produits</h1>
@@ -198,8 +226,8 @@ const Produit = () => {
               extra={
                 <div className="d-flex">
                   <Input
-                    placeholder="Rechercher par nom ou référence"
-                    style={{ marginRight: 25, width: 200 }}
+                    placeholder="Rechercher par nom, référence ou catégorie"
+                    style={{ marginRight: 25, width: 250 }}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onPressEnter={handleSearch}
@@ -241,6 +269,7 @@ const Produit = () => {
                   dataSource={filterData.length > 0 ? filterData : data}
                   pagination={true}
                   className="ant-border-space"
+                  rowKey="reference"
                 />
               </div>
             </Card>
@@ -263,100 +292,132 @@ const Produit = () => {
           footer={false}
         >
           {record && (
-            <Badge.Ribbon style={{ marginTop: 15 }} color="red">
+            <Badge.Ribbon
+              text="Détails Produit"
+              color="red"
+              style={{ marginTop: 15 }}
+            >
               <Card>
-                <Row>
+                <Row gutter={16}>
                   <Col span={12}>
-                    <h3>Détails du produit</h3>
+                    <h3>Informations de base</h3>
                     <p>
                       <strong>Référence:</strong> {record.reference}
                     </p>
                     <p>
                       <strong>Nom:</strong> {record.nom}
                     </p>
-                    {record?.description && (
-                      <p>
-                        <strong>Description:</strong> {record.description}
-                      </p>
-                    )}
+                    <p>
+                      <strong>Catégorie:</strong> {record.category}
+                    </p>
+                    <p>
+                      <strong>Prix d'achat:</strong> {record.prixAchat} TND
+                    </p>
+                    <p>
+                      <strong>Prix de vente:</strong> {record.prixVente} TND
+                    </p>
+                  </Col>
+
+                  <Col span={12}>
+                    <h3>Variantes disponibles</h3>
+                    <Select
+                      style={{ width: "100%", marginBottom: 16 }}
+                      value={selectedColor}
+                      onChange={(value) => setSelectedColor(value)}
+                      placeholder="Sélectionner une couleur"
+                    >
+                      {record.options?.map((option, index) => (
+                        <Option key={index} value={option.color}>
+                          {option.color} - {option.sizes}
+                        </Option>
+                      ))}
+                    </Select>
                   </Col>
                 </Row>
 
-                <Card
-                  title="Stock par Magasin"
-                  style={{ marginTop: 16 }}
-                  bordered={false}
-                >
-                  {record?.quantite?.map((el, index) => {
-                    const magasin = magasins.find(
-                      (elm) => elm._id === el.magasinId
-                    );
-                    const availableStock =
-                      el.quantiteInitiale - el.quantiteVendue;
-                    const stockPercentage =
-                      (availableStock / el.quantiteInitiale) * 100;
+                {selectedColor && (
+                  <Card
+                    title={`Stock pour la variante ${selectedColor}`}
+                    style={{ marginTop: 16 }}
+                    bordered={false}
+                  >
+                    {record.options
+                      ?.filter((option) => option.color === selectedColor)
+                      ?.map((option, index) => {
+                        const { availableStock, stockPercentage, status } =
+                          calculateStock(option);
 
-                    return (
-                      <div key={index} style={{ marginBottom: 16 }}>
-                        <Row gutter={16} align="middle">
-                          <Col span={8}>
-                            <Text strong>Magasin:</Text>
-                            <Text style={{ marginLeft: 8 }}>
-                              {magasin?.nom || "Inconnu"}
-                            </Text>
-                          </Col>
+                        return (
+                          <div key={index}>
+                            <Row gutter={16} align="middle">
+                              <Col span={8}>
+                                <Text strong>Taille:</Text>
+                                <Text style={{ marginLeft: 8 }}>
+                                  {option.sizes}
+                                </Text>
+                              </Col>
 
-                          <Col span={8}>
-                            <Text strong>Stock disponible:</Text>
-                            <Badge
-                              count={availableStock}
-                              style={{
-                                backgroundColor:
-                                  availableStock > 0 ? "#52c41a" : "#f5222d",
-                                marginLeft: 8,
-                              }}
-                            />
-                          </Col>
+                              <Col span={8}>
+                                <Text strong>Stock disponible:</Text>
+                                <Badge
+                                  count={availableStock}
+                                  style={{
+                                    backgroundColor:
+                                      status === "RUPTURE DE STOCK"
+                                        ? "#f5222d"
+                                        : status === "STOCK FAIBLE"
+                                        ? "#faad14"
+                                        : "#52c41a",
+                                    marginLeft: 8,
+                                  }}
+                                />
+                              </Col>
 
-                          <Col span={8}>
-                            <Progress
-                              percent={stockPercentage}
-                              status={
-                                stockPercentage > 50
-                                  ? "success"
-                                  : stockPercentage > 20
-                                  ? "normal"
-                                  : "exception"
-                              }
-                              showInfo={false}
-                            />
-                          </Col>
-                        </Row>
+                              <Col span={8}>
+                                <Progress
+                                  percent={Math.round(stockPercentage)}
+                                  status={
+                                    stockPercentage > 50
+                                      ? "success"
+                                      : stockPercentage > 20
+                                      ? "normal"
+                                      : "exception"
+                                  }
+                                />
+                              </Col>
+                            </Row>
 
-                        <Row gutter={16} style={{ marginTop: 8 }}>
-                          <Col span={12}>
-                            <Text type="secondary">
-                              Initial: {el.quantiteInitiale} | Vendu:{" "}
-                              {el.quantiteVendue}
-                            </Text>
-                          </Col>
-                          <Col span={12}>
-                            {availableStock <= 0 && (
-                              <Tag color="red">RUPTURE DE STOCK</Tag>
+                            <Row gutter={16} style={{ marginTop: 8 }}>
+                              <Col span={12}>
+                                <Text type="secondary">
+                                  Initial: {option.quantiteInitiale} | Vendu:{" "}
+                                  {option.quantiteVendue} | Perdu:{" "}
+                                  {option.quantitePerdue}
+                                </Text>
+                              </Col>
+                              <Col span={12}>
+                                <Tag
+                                  color={
+                                    status === "RUPTURE DE STOCK"
+                                      ? "red"
+                                      : status === "STOCK FAIBLE"
+                                      ? "orange"
+                                      : "green"
+                                  }
+                                >
+                                  {status}
+                                </Tag>
+                              </Col>
+                            </Row>
+
+                            {index < record.options.length - 1 && (
+                              <Divider style={{ margin: "12px 0" }} />
                             )}
-                            {availableStock > 0 && availableStock <= 5 && (
-                              <Tag color="orange">STOCK FAIBLE</Tag>
-                            )}
-                          </Col>
-                        </Row>
-
-                        {index < record.quantite.length - 1 && (
-                          <Divider style={{ margin: "12px 0" }} />
-                        )}
-                      </div>
-                    );
-                  })}
-                </Card>
+                          </div>
+                        );
+                      })}
+                  </Card>
+                )}
               </Card>
             </Badge.Ribbon>
           )}

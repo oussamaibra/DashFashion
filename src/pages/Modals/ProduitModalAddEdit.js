@@ -11,6 +11,7 @@ import {
   Select,
   Table,
   Typography,
+  Upload,
 } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
@@ -21,52 +22,93 @@ const { Text } = Typography;
 const ProduitModalAddEdit = (props) => {
   const { visible, onCancel, type, record, refetch } = props;
   const [form] = Form.useForm();
-  const [magasins, setMagasins] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [quantities, setQuantities] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-  // Initialize quantities from record or empty array
   useEffect(() => {
-    axios
-      .get("http://127.0.0.1:3000/magasins")
-      .then((response) => setMagasins(response.data))
-      .catch((err) => console.error("Error loading stores:", err));
+    // Load categories
+    setCategories([
+      {
+        _id: "Homme",
+        nom: "Homme",
+      },
+      {
+        _id: "Femme",
+        nom: "Femme",
+      },
+    ]);
 
-    if (type === "EDIT" && record?.quantite) {
-      setQuantities(record.quantite);
+    if (type === "EDIT" && record) {
+      // Convert the record data to match the form structure
+      const formattedOptions = record.options.map((opt) => ({
+        ...opt,
+        sizes: opt.sizes,
+        images: opt.images
+          .split(",")
+          // .map((url) => url.trim())
+          .filter((url) => url),
+      }));
+
+      setOptions(formattedOptions);
       form.setFieldsValue({
         ...record,
+        category: record.category || "Homme",
       });
     } else {
       form.resetFields();
-      setQuantities([]);
+      setOptions([]);
     }
   }, [visible, record]);
 
-  const handleAddMagasin = () => {
-    setQuantities([
-      ...quantities,
+  const handleAddOption = () => {
+    setOptions([
+      ...options,
       {
-        magasinId: "",
+        color: "",
+        sizes: "",
         quantiteInitiale: 0,
         quantiteVendue: 0,
         quantitePerdue: 0,
+        images: [],
       },
     ]);
   };
 
-  const handleRemoveMagasin = (index) => {
-    const newQuantities = [...quantities];
-    newQuantities.splice(index, 1);
-    setQuantities(newQuantities);
+  const handleRemoveOption = (index) => {
+    const newOptions = [...options];
+    newOptions.splice(index, 1);
+    setOptions(newOptions);
   };
 
-  const handleQuantityChange = (index, field, value) => {
-    const newQuantities = [...quantities];
-    newQuantities[index][field] = value;
-    setQuantities(newQuantities);
+  const handleOptionChange = (index, field, value) => {
+    const newOptions = [...options];
+    newOptions[index][field] = value;
+    setOptions(newOptions);
+  };
 
-    console.log("tttttttttttt", field, value, newQuantities);
+  const handleImageUpload = (index, info) => {
+    const { fileList } = info;
+    const newOptions = [...options];
+
+    // Process fileList to get only the URLs of successfully uploaded images
+    newOptions[index].images = fileList
+      // .filter((file) => file.status === "done") // Only keep completed uploads
+      .map((file) => {
+        // For existing images (already have full URL)
+        if (file.url) {
+          return file.url;
+        }
+        // For newly uploaded images - construct URL from API response
+        if (file.status === "uploading") {
+          const filename = file.name.replace(",", "");
+          return `http://localhost:3003/upload/${filename}`;
+        }
+        return null;
+      })
+      .filter((url) => url); // Remove any null/undefined values
+
+    setOptions(newOptions);
   };
 
   const onFinish = async (values) => {
@@ -74,22 +116,24 @@ const ProduitModalAddEdit = (props) => {
     try {
       const payload = {
         ...values,
-        quantite: quantities.map((q) => ({
-          ...q,
-          quantiteInitiale: Number(q.quantiteInitiale),
-          quantiteVendue: Number(q.quantiteVendue),
-          quantitePerdue: Number(q.quantitePerdue),
+
+        options: options.map((opt) => ({
+          ...opt,
+          images: opt.images.join(","),
+          quantiteInitiale: Number(opt.quantiteInitiale),
+          quantiteVendue: Number(opt.quantiteVendue),
+          quantitePerdue: Number(opt.quantitePerdue),
         })),
       };
 
       if (type === "EDIT") {
-        await axios.put(`http://127.0.0.1:3000/stock/${record._id}`, payload);
-        message.success("Stock mis à jour avec succès");
+        await axios.put(`http://127.0.0.1:3003/produit/${record._id}`, payload);
+        message.success("Produit mis à jour avec succès");
       } else {
-        await axios.post("http://127.0.0.1:3000/stock", payload);
-        message.success("Stock créé avec succès");
+        await axios.post("http://127.0.0.1:3003/produit", payload);
+        message.success("Produit créé avec succès");
       }
-      refetch()
+      refetch();
       onCancel();
     } catch (error) {
       message.error("Erreur lors de l'enregistrement");
@@ -101,18 +145,48 @@ const ProduitModalAddEdit = (props) => {
 
   const columns = [
     {
-      title: "Magasin",
-      dataIndex: "magasinId",
+      title: "Couleur",
+      dataIndex: "color",
+      render: (_, record, index) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* <Input
+            value={options[index]?.color || ""}
+            onChange={(e) => handleOptionChange(index, "color", e.target.value)}
+            placeholder="Nom de la couleur"
+            style={{ flex: 1 }}
+          /> */}
+          <input
+            type="color"
+            value={options[index]?.color || "#ffffff"}
+            onChange={(e) =>
+              handleOptionChange(index, "color", e.target.value)
+            }
+            style={{
+              width: 30,
+              height: 30,
+              padding: 0,
+              border: "1px solid #d9d9d9",
+            }}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Tailles",
+      dataIndex: "sizes",
       render: (_, record, index) => (
         <Select
-          value={quantities[index]?.magasinId}
-          onChange={(value) => handleQuantityChange(index, "magasinId", value)}
-          placeholder="Sélectionner un magasin"
+          mode="tags"
+          value={options[index]?.sizes ? options[index].sizes.split(",") : []}
+          onChange={(values) =>
+            handleOptionChange(index, "sizes", values.join(","))
+          }
+          placeholder="Sélectionner les tailles"
           style={{ width: "100%" }}
         >
-          {magasins.map((magasin) => (
-            <Select.Option key={magasin._id} value={magasin._id}>
-              {magasin.nom}
+          {["S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"].map((size) => (
+            <Select.Option key={size} value={size.toString()}>
+              {size}
             </Select.Option>
           ))}
         </Select>
@@ -123,9 +197,9 @@ const ProduitModalAddEdit = (props) => {
       dataIndex: "quantiteInitiale",
       render: (_, record, index) => (
         <InputNumber
-          value={quantities[index]?.quantiteInitiale}
+          value={options[index]?.quantiteInitiale}
           onChange={(value) =>
-            handleQuantityChange(index, "quantiteInitiale", value)
+            handleOptionChange(index, "quantiteInitiale", value)
           }
           min={0}
           style={{ width: "100%" }}
@@ -137,9 +211,9 @@ const ProduitModalAddEdit = (props) => {
       dataIndex: "quantiteVendue",
       render: (_, record, index) => (
         <InputNumber
-          value={quantities[index]?.quantiteVendue}
+          value={options[index]?.quantiteVendue}
           onChange={(value) =>
-            handleQuantityChange(index, "quantiteVendue", value)
+            handleOptionChange(index, "quantiteVendue", value)
           }
           min={0}
           style={{ width: "100%" }}
@@ -151,9 +225,9 @@ const ProduitModalAddEdit = (props) => {
       dataIndex: "quantitePerdue",
       render: (_, record, index) => (
         <InputNumber
-          value={quantities[index]?.quantitePerdue}
+          value={options[index]?.quantitePerdue}
           onChange={(value) =>
-            handleQuantityChange(index, "quantitePerdue", value)
+            handleOptionChange(index, "quantitePerdue", value)
           }
           min={0}
           style={{ width: "100%" }}
@@ -161,18 +235,77 @@ const ProduitModalAddEdit = (props) => {
       ),
     },
     {
+      title: "Images",
+      dataIndex: "images",
+      render: (_, record, index) => (
+        <Upload
+          multiple
+          listType="picture-card"
+          fileList={
+            options[index]?.images?.map((url) => ({
+              uid: url,
+              name: url,
+              status: "done",
+              url: url,
+            })) || []
+          }
+          onChange={(info) => handleImageUpload(index, info)}
+          action="http://localhost:3003/upload"
+          accept="image/*"
+          beforeUpload={(file) => {
+            const isImage = file.type.startsWith("image/");
+            const isLt5M = file.size / 1024 / 1024 < 5;
+
+            if (!isImage) {
+              message.error("You can only upload image files!");
+              return Upload.LIST_IGNORE;
+            }
+            if (!isLt5M) {
+              message.error("Image must be smaller than 5MB!");
+              return Upload.LIST_IGNORE;
+            }
+            return true;
+          }}
+          onPreview={(file) => {
+            window.open(
+              file.url ||
+                `http://localhost:3003/upload/${file.response?.filename}`,
+              "_blank"
+            );
+          }}
+          onRemove={(file) => {
+            const newOptions = [...options];
+            newOptions[index].images = newOptions[index].images.filter(
+              (url) => url !== file.url
+            );
+            setOptions(newOptions);
+            return false; // Prevent default remove behavior
+          }}
+        >
+          {options[index]?.images?.length >= 8 ? null : (
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Upload</div>
+            </div>
+          )}
+        </Upload>
+      ),
+    },
+    {
       title: "Action",
       render: (_, __, index) => (
-        <MinusCircleOutlined onClick={() => handleRemoveMagasin(index)} />
+        <MinusCircleOutlined onClick={() => handleRemoveOption(index)} />
       ),
     },
   ];
 
   return (
     <Modal
-      title={type === "EDIT" ? "MODIFIER LE STOCK" : "AJOUTER UN NOUVEAU STOCK"}
+      title={
+        type === "EDIT" ? "MODIFIER LE PRODUIT" : "AJOUTER UN NOUVEAU PRODUIT"
+      }
       visible={visible}
-      width={1000}
+      width={1200}
       onCancel={onCancel}
       onOk={() => form.submit()}
       confirmLoading={loading}
@@ -206,25 +339,25 @@ const ProduitModalAddEdit = (props) => {
               </Form.Item>
             </Col>
 
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
-                name="taille"
-                label="Taille (1-6)"
+                name="category"
+                label="Catégorie"
                 rules={[
                   { required: true, message: "Ce champ est obligatoire" },
-                  {
-                    type: "number",
-                    min: 1,
-                    max: 6,
-                    message: "Doit être entre 1 et 6",
-                  },
                 ]}
               >
-                <InputNumber style={{ width: "100%" }} />
+                <Select placeholder="Sélectionnez une catégorie">
+                  {categories.map((cat) => (
+                    <Select.Option key={cat._id} value={cat._id}>
+                      {cat.nom}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
 
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 name="prixAchat"
                 label="Prix d'Achat (TND)"
@@ -236,7 +369,7 @@ const ProduitModalAddEdit = (props) => {
               </Form.Item>
             </Col>
 
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 name="prixVente"
                 label="Prix de Vente (TND)"
@@ -250,22 +383,22 @@ const ProduitModalAddEdit = (props) => {
 
             <Col span={24}>
               <Text strong style={{ display: "block", marginBottom: 16 }}>
-                Quantités par Magasin
+                Options par Couleur/Taille
               </Text>
 
               <Table
                 columns={columns}
-                dataSource={quantities}
+                dataSource={options}
                 pagination={false}
                 rowKey={(_, index) => index}
                 footer={() => (
                   <Button
                     type="dashed"
-                    onClick={handleAddMagasin}
+                    onClick={handleAddOption}
                     block
                     icon={<PlusOutlined />}
                   >
-                    Ajouter un Magasin
+                    Ajouter une Option (Couleur/Taille)
                   </Button>
                 )}
               />
