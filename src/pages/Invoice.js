@@ -239,54 +239,68 @@ const Invoice = () => {
 
     autoTable(doc, {
       startY: 75,
-      head: [['Réf.', 'Désignation', 'Taille', 'Qté', 'Prix Unitaire', 'Total']],
+      head: [
+        ["Réf.", "Désignation", "Taille", "Qté", "Prix Unitaire", "Total"],
+      ],
       body: itemsData,
-      theme: 'grid',
+      theme: "grid",
       headStyles: {
         fillColor: secondaryColor,
         textColor: 255,
-        fontStyle: 'bold',
+        fontStyle: "bold",
         fontSize: 11,
-        halign: 'center',
-        valign: 'middle'
+        halign: "center",
+        valign: "middle",
       },
       bodyStyles: {
         fontSize: 10,
-        valign: 'middle',
+        valign: "middle",
         cellPadding: { top: 4, bottom: 4, left: 2, right: 2 },
       },
       alternateRowStyles: {
         fillColor: [250, 250, 250],
       },
       columnStyles: {
-        0: { cellWidth: 25, halign: 'left' }, // Réf.
-        1: { cellWidth: 60, halign: 'left' }, // Désignation
-        2: { cellWidth: 20, halign: 'center' }, // Taille
-        3: { cellWidth: 20, halign: 'center' }, // Qté
-        4: { cellWidth: 30, halign: 'right' }, // Prix U
-        5: { cellWidth: 30, halign: 'right' }, // Total
+        0: { cellWidth: 25, halign: "left" }, // Réf.
+        1: { cellWidth: 60, halign: "left" }, // Désignation
+        2: { cellWidth: 20, halign: "center" }, // Taille
+        3: { cellWidth: 20, halign: "center" }, // Qté
+        4: { cellWidth: 30, halign: "right" }, // Prix U
+        5: { cellWidth: 30, halign: "right" }, // Total
       },
       styles: {
         lineColor: 230,
         lineWidth: 0.1,
-        overflow: 'linebreak',
-        font: 'helvetica',
+        overflow: "linebreak",
+        font: "helvetica",
       },
       margin: { top: 0, left: 15, right: 15 },
       didDrawPage: function (data) {
         // Footer (déjà défini dans le reste du script, tu peux le garder tel quel ici)
         const footerY = pageHeight - 30;
         doc.setFillColor(...primaryColor);
-        doc.rect(0, footerY, pageWidth, 30, 'F');
-    
+        doc.rect(0, footerY, pageWidth, 30, "F");
+
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(9);
-        doc.text("Merci pour votre confiance. Paiement attendu sous 30 jours.", pageWidth / 2, footerY + 10, { align: 'center' });
-        doc.text("IBAN: FR76 3003 1000 0100 0000 0000 XXXX • BIC: SOGEFRPP", pageWidth / 2, footerY + 16, { align: 'center' });
-    
+        doc.text(
+          "Merci pour votre confiance. Paiement attendu sous 30 jours.",
+          pageWidth / 2,
+          footerY + 10,
+          { align: "center" }
+        );
+        doc.text(
+          "IBAN: FR76 3003 1000 0100 0000 0000 XXXX • BIC: SOGEFRPP",
+          pageWidth / 2,
+          footerY + 16,
+          { align: "center" }
+        );
+
         doc.setFontSize(8);
-        doc.text(`Page ${data.pageCount}`, pageWidth - 15, footerY + 26, { align: 'right' });
-      }
+        doc.text(`Page ${data.pageCount}`, pageWidth - 15, footerY + 26, {
+          align: "right",
+        });
+      },
     });
     // --- TOTAUX ---
     const finalY = doc.lastAutoTable.finalY + 10;
@@ -398,7 +412,6 @@ const Invoice = () => {
             onClick={() => {
               setshowdetail(true);
               setrecord(_);
-              
             }}
           >
             <InfoCircleOutlined />
@@ -497,10 +510,11 @@ const Invoice = () => {
           onCancel={() => setVisible(false)}
         />
         <InvoiceDetailModal
-        visible={showdetail}
-        invoice={record}
-        onCancel={() => setshowdetail(false)}
-         />
+          visible={showdetail}
+          invoice={record}
+          refetch={refetech()}
+          onCancel={() => setshowdetail(false)}
+        />
       </div>
     </>
   );
