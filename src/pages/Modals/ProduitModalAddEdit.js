@@ -381,6 +381,19 @@ const ProduitModalAddEdit = (props) => {
               </Form.Item>
             </Col>
 
+            
+            <Col span={12}>
+              <Form.Item
+                name="discount"
+                label="Discount (TND)"
+                rules={[
+                  { required: false, message: "Ce champ est obligatoire" },
+                ]}
+              >
+                <InputNumber style={{ width: "100%" }} min={0} step={0.01} />
+              </Form.Item>
+            </Col>
+
             <Col span={24}>
               <Text strong style={{ display: "block", marginBottom: 16 }}>
                 Options par Couleur/Taille
